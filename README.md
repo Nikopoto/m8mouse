@@ -25,74 +25,74 @@ so instead we rely on checking the handshake and memory buffer to confirm
         //08a0:Gaming mouse [Philips SPK9304]
 
 
+
 ## Compiling and Running
 
 ### Dependencies
 
-Main dependency for this tool is **hidapi** with the libusb backend.
-Install the library (usually preinstalled) and headers for it before
-compiling.
+This tool depends primarily on **hidapi** (with the libusb backend).  Make sure the library and headers are installed before building.
 
-On debian that should be (note the -libusb0 for binaries)
+On Debian/Ubuntu systems:
+```
+sudo apt install libhidapi-libusb0 libhidapi-dev cmake build-essential pkg-config
+```
+On Fedora:
+```
+sudo dnf install hidapi-devel cmake gcc-c++ make pkgconf-pkg-config
+```
+On Arch Linux:
+```
+sudo pacman -Syu hidapi cmake base-devel pkgconf
+```
+### Build & Install
 
-    apt install libhidapi-libusb0 libhidapi-dev
+There's an install script in the repo.
+```
+./install.sh
+```
+### Manual Build Instructions
 
-### Compiling
+If you want to build manually run:
+```
+mkdir -p build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/.local
+cmake --build . -- -j$(nproc)
+cmake --install .
+```
+### Using the Tool
 
-Then it's standard cmake build workflow:
+After installing, make sure your udev rules are reloaded and the mouse is re-plugged (or reboot):
+```
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+# Basic usage examples:
 
-    cmake -H. -Bbuild -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Debug 
-    cmake --build build
+## Show help
+```
+m8mouse -h
+```
+## List supported modes and settings
+```
+m8mouse -l
+```
+## Query current device state
+```
+m8mouse
+```
+## Update device state (example: DPI=1, LED=2, speed=4)
+```
+m8mouse -dpi 1 -led 2 -speed 4
+```
+## Known Issues
 
-### Installing
-
-Install globally with cmake
-
-    # this installs the binary and the udev.rules file
-    sudo cmake --build build --target install
-
-#### Installing without sudo
-
-If you prefer to avoid installing globally, you can use user bin directory
-for the binary if you have that included on your path already.
-You would also need to edit or copy the udev.rules file directly to
-allow user access to the device
-
-    cp -v build/m8mouse $HOME/bin
-    sudo cp -v 90-m8mouse.rules /etc/udev/rules.d/
-
-### Running 
-
-First reload your udev rules and reconnect the device (or restart your PC)
-
-    # reload udev rules
-    sudo udevadm control -R
-
-Then run m8mouse
-    
-    # show usage
-    m8mouse -h
-    # List known modes and settings
-    m8mouse -l
-    # Query device state
-    m8mouse
-    # Update device state
-    m8mouse -dpi 1 -led 2 -speed 4
-
-
-## Issues
-
-The query/update cycle is pretty slow as the mouse mcu needs ~14ms between each set/get call.
-In total a query is about 1.5s and a update is about 3.2s
-
-Other functions like key mappings are also present in the queried configuration
-but I didn't need them changed. If there is interest out there for allowing those
-feel free to raise an issue to discuss.
+- Device communication is slow due to ~14ms required between each set/get command.
 
 ## License
 
-MIT license, see LICENSE file.
+#### MIT — see LICENSE file for details.
 
-Logging framework included is here (used for debugging mostly, not cli):
-https://github.com/rxi/log.c/
+## Credits
 
+#### Logging framework used for debugging: https://github.com/rxi/log.c/
